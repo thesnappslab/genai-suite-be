@@ -10,25 +10,25 @@ const { UserSerializer } = require("../serializers/UserSerializer");
 const createSuperAdmin = async() => {
     try{
         const existingSuperAdmin= await User.find({"role": 'superadmin'});
+        logDebugToConsole(`Existing Super Admin ${existingSuperAdmin}`, "info")
         if(existingSuperAdmin && existingSuperAdmin.length>0){
             info({message: "Super Admin Already Exists", badge: true})
         }else{
             const user= new User(
                 {
-                    firstname: SUPER_ADMIN_FIRST_NAME,
+                    firstname: SUPER_ADMIN_FIRST_NAME, 
                     lastname: SUPER_ADMIN_LAST_NAME,
                     gender: SUPER_ADMIN_GENDER,
                     email:  SUPER_ADMIN_EMAIL,
                     username: EQUAL_USERNAME_EMAIL ? SUPER_ADMIN_EMAIL : SUPER_ADMIN_USERNAME,
                     password: await bcrypt.hash(SUPER_ADMIN_PASSWORD, 12),
                     lastLoginTime: null,
-                    firstLogin: true,
                     isActivated: false,
                     forcePasswordChange: true,
                     role: "superadmin",
                     createdBy: "system",
                     updatedBy: "system",
-                    tenant: null,
+                    tenant: null, 
                     }
             );
             await user.save();

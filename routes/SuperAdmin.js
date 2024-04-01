@@ -1,11 +1,12 @@
 const router = require('express').Router();
 
+const { userAuthentication, checkUser } = require('../middlewares/AuthMiddleware');
 const { addTenant, getTenants, getTenant, editTenant } = require('../services/SuperAdminService');
 
 router.post(`/add-tenant`, async (req, res) => {
     await addTenant(req.body, res);
 });
-router.get(`/get-tenants`, async (req, res) => {
+router.get(`/get-tenants`, userAuthentication, checkUser(['superadmin']), async (req, res) => {
     await getTenants(req, res);
 });
 router.get(`/get-tenant/:id`, async (req, res) => {

@@ -9,8 +9,9 @@ const statusMessages= {
     GET_TENANT_SUCCESS: "Tenant Details Fetched Successfully.",
     LOGIN_SUCCESS: "User logged in successfully.",
     LOGIN_FAILED: "User Login Failed.",
-    ACCESS_TOKEN_SUCCESS: "",
-    ACCESS_TOKEN_FAILED: "",
+    ACCESS_TOKEN_SUCCESS: "Access Token Generated Successfully.",
+    ACCESS_TOKEN_FAILED: "Access Token Generation Failed.",
+    ACCESS_DENIED: "Access Denied.",
     INTERNAL_SERVER_ERROR: "Something went wrong. Please try again after sometime. If persists, please contact admin.",
     INVALID_ENC_REQUEST: "Invalid Encrypted Request."
 };
@@ -25,6 +26,12 @@ const statusDescriptions= {
     LOGIN_WRONG_CREDENTAILS: "Wrong Credentials entered.",
     REFRESH_TOKEN_MANDATORY: "Refresh Token Mandatory for generating Access Token.",
     REFRESH_TOKEN_EXPIRED: "Refresh Token Expired/ Invalidated.",
+    ACCESS_TOKEN_MISSING: "Access Token not provided.",
+    ACCESS_TOKEN_EXPIRED: "Access Token Expired/ Invalidated.",
+    USER_DATA_MISSING: "User Data is missing.",
+    USER_NOT_ACTIVATED: "User is not activated, please contact the admin.",
+    USER_PWD_CHANGE: "Password change is required, please change password to proceed.",
+    USER_NOT_AUTHORISED: "User not Authorised to perform this action. Elevation of role is required, please contact the Admin.",
     NO_LOGGED_IN_USER_DETAILS: "Logged in user details are missing."
 };
 const statusCodes= {
@@ -34,7 +41,8 @@ const statusCodes= {
     SUCCESS: 200,
     UNAUTHORISED: 401,
     TOKEN_EXPIRED: 412,
-    NOT_FOUND: 404
+    NOT_FOUND: 404,
+    EXPECTATION_FAILED: 417
 };
 
 module.exports = {

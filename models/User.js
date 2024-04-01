@@ -1,7 +1,8 @@
 const { model, Schema } = require('mongoose');
 const Tenant = require('./Tenant');
+const { DBDataEncDecMiddleware } = require('../middlewares/EncDecMiddleware');
 
-const userSchema = new Schema(
+const UserSchema = new Schema(
     {
         firstname: {
             type: String,
@@ -17,10 +18,12 @@ const userSchema = new Schema(
         },
         email: {
             type: String,
+            unique: true,
             required: true,
         },
         username: {
             type: String,
+            unique: true,
             required: true,
         },
         password: {
@@ -62,5 +65,6 @@ const userSchema = new Schema(
     
     {timestamps: true}
 );
+DBDataEncDecMiddleware(UserSchema, ['firstname', 'lastname', 'gender', 'lastLoginTime']); 
 
-module.exports = model('users', userSchema);
+module.exports = model('users', UserSchema);
