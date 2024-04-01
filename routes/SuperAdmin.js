@@ -17,4 +17,5 @@ router.put(`/edit-tenant/:id`, async (req, res) => {
 router.delete(`/delete-tenant/:id`, async (req, res) => {
     await deleteTenant(req.params.id, req.body, res);
 });
+
 module.exports = router;

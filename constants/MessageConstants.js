@@ -9,6 +9,8 @@ const statusMessages= {
     GET_TENANT_SUCCESS: "Tenant Details Fetched Successfully.",
     LOGIN_SUCCESS: "User logged in successfully.",
     LOGIN_FAILED: "User Login Failed.",
+    ACCESS_TOKEN_SUCCESS: "",
+    ACCESS_TOKEN_FAILED: "",
     INTERNAL_SERVER_ERROR: "Something went wrong. Please try again after sometime. If persists, please contact admin.",
     INVALID_ENC_REQUEST: "Invalid Encrypted Request."
 };
@@ -18,8 +20,11 @@ const statusDescriptions= {
     TENANT_DOCUMENT_MANDATORY: "Supporting document for the tenant is required.",
     TENANT_SERVICE_ENDPOINTS_MANDATORY: "Tenant Service Endpoints are to be mandatorily configured.",
     TENANT_ID_MISSING: "No Tenant ID is mentioned.",
-    LOGIN_CREDENTIALS_MANDATORY: "Username/Email and Password are mandatory for login.",
+    LOGIN_CREDENTIALS_MANDATORY: "Username/ Email and Password are mandatory for login.",
     LOGIN_USER_NOT_FOUND: "User with the given Username/Email is not found. Please check your credentials.",
+    LOGIN_WRONG_CREDENTAILS: "Wrong Credentials entered.",
+    REFRESH_TOKEN_MANDATORY: "Refresh Token Mandatory for generating Access Token.",
+    REFRESH_TOKEN_EXPIRED: "Refresh Token Expired/ Invalidated.",
     NO_LOGGED_IN_USER_DETAILS: "Logged in user details are missing."
 };
 const statusCodes= {
@@ -28,7 +33,8 @@ const statusCodes= {
     SERVER_ERROR: 500,
     SUCCESS: 200,
     UNAUTHORISED: 401,
-    TOKEN_EXPIRED: 412
+    TOKEN_EXPIRED: 412,
+    NOT_FOUND: 404
 };
 
 module.exports = {

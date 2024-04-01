@@ -40,4 +40,6 @@ const startApp = async () => {
 startApp();
 app.use(DecryptRequestMiddleware);
 app.use(EncryptResponseMiddleware);
+
 app.use(`${API_BASE_URL}/superadmin`, require('./routes/SuperAdmin'));
+app.use(`${API_BASE_URL}/auth`, require('./routes/Auth'));

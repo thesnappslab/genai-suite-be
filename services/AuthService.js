@@ -1,8 +1,11 @@
 const { info, success, error } = require("consola");
 const bcrypt = require("bcryptjs");
-const { EQUAL_USERNAME_EMAIL, SUPER_ADMIN_FIRST_NAME, SUPER_ADMIN_LAST_NAME, SUPER_ADMIN_EMAIL, SUPER_ADMIN_USERNAME, SUPER_ADMIN_PASSWORD, SUPER_ADMIN_GENDER } = require("../constants/AppConstants");
+const jwt = require('jsonwebtoken');
+const { EQUAL_USERNAME_EMAIL, SUPER_ADMIN_FIRST_NAME, SUPER_ADMIN_LAST_NAME, SUPER_ADMIN_EMAIL, SUPER_ADMIN_USERNAME, SUPER_ADMIN_PASSWORD, SUPER_ADMIN_GENDER, REFRESH_SECRET, ACCESS_SECRET } = require("../constants/AppConstants");
 const User = require("../models/User");
-const { raiseCustomException } = require("../utils/AppUtils");
+const { raiseCustomException, logDebugToConsole } = require("../utils/AppUtils");
+const { statusCodes, statusMessages, statusDescriptions } = require("../constants/MessageConstants");
+const { UserSerializer } = require("../serializers/UserSerializer");
 
 const createSuperAdmin = async() => {
     try{
@@ -41,17 +44,32 @@ const loginUser = async(req, res) => {
         logDebugToConsole("User Login Object: "+req.toString(), "info")
         const { username, email, password }= req;
         if(!(username||email) || !password){
-            (()=>{ throw raiseCustomException(`${statusMessages.ADD_TENANT_FAILED} ${statusDescriptions.TENANT_NAME_MANDATORY}`, statusCodes.BAD_REQUEST)})()
+            (()=>{ throw raiseCustomException(`${statusMessages.LOGIN_FAILED} ${statusDescriptions.LOGIN_CREDENTIALS_MANDATORY}`, statusCodes.BAD_REQUEST)})()
         }
-        const tenant= await tenantRequest.save();
-        logDebugToConsole("Add Tenant Success: "+tenant.toString(), "success")
+        const filter= {
+            $or: [
+              { username: username },
+              { email: email }
+            ]
+          }
+        const user= await User.findOne(filter);
+        if(!user){
+            (()=>{ throw raiseCustomException(`${statusMessages.LOGIN_FAILED} ${statusDescriptions.LOGIN_USER_NOT_FOUND}`, statusCodes.NOT_FOUND)})()
+        }
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        if (!isPasswordValid) {
+            (()=>{ throw raiseCustomException(`${statusMessages.LOGIN_FAILED} ${statusDescriptions.LOGIN_WRONG_CREDENTAILS}`, statusCodes.UNAUTHORISED)})()
+        }
+        const accessToken = jwt.sign(UserSerializer(user), ACCESS_SECRET, { expiresIn: '15m' });
+        const refreshToken = jwt.sign(UserSerializer(user), REFRESH_SECRET, { expiresIn: '1d' });
+        logDebugToConsole("User Login Success: "+user.toString(), "success")
         res.status(statusCodes.SUCCESS).send({
-            data: TenantSerializer(tenant),
+            data: {...UserSerializer(user), accessToken: `Bearer ${accessToken}`, refreshToken: refreshToken},
             success: true,
-            message: statusMessages.ADD_TENANT_SUCCESS
+            message: statusMessages.LOGIN_SUCCESS
         });
     }catch(err){
-        logDebugToConsole("Add Tenant Error: "+err.toString(), "error")
+        logDebugToConsole("User Login Error: "+err.toString(), "error")
         if(err.type && err.type==="custom"){
             res.status(err.code).send({
                 success: false,
@@ -66,6 +84,42 @@ const loginUser = async(req, res) => {
         } 
     }
 };
+const generateToken = async(req, res) => {
+    try {
+        logDebugToConsole("Access Token Object: "+req.toString(), "info")
+        const { refreshToken } = req;
+        if (!refreshToken) {
+            (()=>{ throw raiseCustomException(`${statusMessages.ACCESS_TOKEN_FAILED} ${statusDescriptions.REFRESH_TOKEN_MANDATORY}`, statusCodes.BAD_REQUEST)})()
+        }
+        const decoded = jwt.verify(refreshToken, REFRESH_SECRET);
+        const user = await User.findOne({ _id: decoded.id });
+        if (!user) {
+            (()=>{ throw raiseCustomException(`${statusMessages.ACCESS_TOKEN_FAILED} ${statusDescriptions.REFRESH_TOKEN_EXPIRED}`, statusCodes.TOKEN_EXPIRED)})()
+        }
+        const accessToken = jwt.sign(UserSerializer(user), ACCESS_SECRET, { expiresIn: '15m' });
+        logDebugToConsole("Access Token Success: "+user.toString(), "success")
+        res.status(statusCodes.SUCCESS).send({
+            data: {...UserSerializer(user), accessToken: `Bearer ${accessToken}`, refreshToken: refreshToken},
+            success: true,
+            message: statusMessages.LOGIN_SUCCESS
+        });
+        } catch (err) {
+            logDebugToConsole("User Login Error: "+err.toString(), "error")
+            if(err.type && err.type==="custom"){
+                res.status(err.code).send({
+                    success: false,
+                    message: err.message
+                });
+            }else{
+                res.status(statusCodes.SERVER_ERROR).send({
+                    data: err,
+                    success: false,
+                    message: statusMessages.INTERNAL_SERVER_ERROR+err.toString()
+                });
+            } 
+        }
+}
 
 
-module.exports = { createSuperAdmin, loginUser }
+
+module.exports = { createSuperAdmin, loginUser, generateToken }
